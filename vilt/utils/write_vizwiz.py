@@ -25,22 +25,23 @@ def make_arrow(root, dataset_root):
     val_images = [x['file_name'] for x in val_annotations["images"]]
     val_images, test_images = train_test_split(val_images, test_size=2750)
     
-    img2iid = dict()
     iid2captions = defaultdict(list)
     iid2split = dict()
+    iid2filename = dict()
 
     for image_info in train_annotations["images"]:
-        img2iid[image_info["file_name"]] = image_info["id"]
-        iid2split[image_info["id"]] = "train"
+        iid2filename[image_info["id"]] = image_info["file_name"]
+        iid2split[image_info["file_name"]] = "train"
     for image_info in val_annotations["images"]:
-        img2iid[image_info["file_name"]] = image_info["id"]
+        iid2filename[image_info["id"]] = image_info["file_name"]
         if image_info["file_name"] in val_images:
-            iid2split[image_info["id"]] = "val"
+            iid2split[image_info["file_name"]] = "val"
         else:
-            iid2split[image_info["id"]] = "test"
+            iid2split[image_info["file_name"]] = "test"
     
     for annotation in train_annotations["annotations"] + val_annotations["annotations"]:
-        iid2captions[annotation["image_id"]].append(annotation["caption"])
+        filename = iid2filename[annotation["image_id"]]
+        iid2captions[filename].append(annotation["caption"])
     
     paths = list(glob(f"{dataset_root}/train/*.jpg")) + list(glob(f"{dataset_root}/val/*.jpg"))
     random.shuffle(paths)
