@@ -208,6 +208,19 @@ def task_finetune_irtr_coco_randaug():
     draw_false_text = 15
     learning_rate = 1e-4
 
+@ex.named_config
+def task_finetune_irit_vizwiz_randaug():
+    exp_name = "finetune_irit_vizwiz_randaug"
+    datasets = ["vizwiz"]
+    train_transform_keys = ["pixelbert_randaug"]
+    loss_names = _loss_names({"itm": 0.5, "irtr": 1})
+    batch_size = 256
+    max_epoch = 10
+    max_steps = None
+    warmup_steps = 0.1
+    get_recall_metric = True
+    draw_false_text = 15
+    learning_rate = 1e-4
 
 @ex.named_config
 def task_finetune_irtr_f30k():
