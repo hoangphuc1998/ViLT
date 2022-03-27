@@ -23,7 +23,7 @@ def make_arrow(root, dataset_root):
     with open(f"{root}/val.json", "r") as f:
         val_annotations = json.load(f)
     val_images = [x['file_name'] for x in val_annotations["images"]]
-    val_images, test_images = train_test_split(val_images, test_size=2750)
+    val_images, test_images = train_test_split(val_images, test_size=5000)
     
     iid2captions = defaultdict(list)
     iid2split = dict()
