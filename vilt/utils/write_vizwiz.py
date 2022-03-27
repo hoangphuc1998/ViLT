@@ -24,7 +24,7 @@ def make_arrow(root, dataset_root):
         val_annotations = json.load(f)
     val_images = [x['file_name'] for x in val_annotations["images"]]
     val_images, test_images = train_test_split(val_images, test_size=5000)
-    
+    _, val_images = train_test_split(val_images, test_size=500)
     iid2captions = defaultdict(list)
     iid2split = dict()
     iid2filename = dict()
@@ -36,9 +36,11 @@ def make_arrow(root, dataset_root):
         iid2filename[image_info["id"]] = image_info["file_name"]
         if image_info["file_name"] in val_images:
             iid2split[image_info["file_name"]] = "val"
-        else:
+        elif image_info["file_name"] in test_images:
             iid2split[image_info["file_name"]] = "test"
-    
+        else:
+            iid2split[image_info["file_name"]] = "train"
+
     for annotation in train_annotations["annotations"] + val_annotations["annotations"]:
         filename = iid2filename[annotation["image_id"]]
         iid2captions[filename].append(annotation["caption"])
@@ -66,7 +68,7 @@ def make_arrow(root, dataset_root):
         table = pa.Table.from_pandas(dataframe)
         os.makedirs(dataset_root, exist_ok=True)
         with pa.OSFile(
-            f"{dataset_root}/wizviz_{split}.arrow", "wb"
+            f"{dataset_root}/vizwiz_{split}.arrow", "wb"
         ) as sink:
             with pa.RecordBatchFileWriter(sink, table.schema) as writer:
                 writer.write_table(table)

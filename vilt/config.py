@@ -209,8 +209,8 @@ def task_finetune_irtr_coco_randaug():
     learning_rate = 1e-4
 
 @ex.named_config
-def task_finetune_irit_vizwiz_randaug():
-    exp_name = "finetune_irit_vizwiz_randaug"
+def task_finetune_irtr_vizwiz_randaug():
+    exp_name = "finetune_irtr_vizwiz_randaug"
     datasets = ["vizwiz"]
     train_transform_keys = ["pixelbert_randaug"]
     loss_names = _loss_names({"itm": 0.5, "irtr": 1})
