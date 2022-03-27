@@ -18,24 +18,33 @@ def path2rest(path, iid2captions, iid2split):
     return [binary, captions, name, split]
 
 def make_arrow(root, dataset_root):
-    with open(f"{root}/karpathy/dataset_coco.json", "r") as fp:
-        captions = json.load(fp)
-
-    captions = captions["images"]
-
+    with open(f"{root}/train.json", "r") as f:
+        train_annotations = json.load(f)
+    with open(f"{root}/val.json", "r") as f:
+        val_annotations = json.load(f)
+    val_images = [x['file_name'] for x in val_annotations["images"]]
+    val_images, test_images = train_test_split(val_images, test_size=2750)
+    
+    img2iid = dict()
     iid2captions = defaultdict(list)
     iid2split = dict()
 
-    for cap in tqdm(captions):
-        filename = cap["filename"]
-        iid2split[filename] = cap["split"]
-        for c in cap["sentences"]:
-            iid2captions[filename].append(c["raw"])
-
-    paths = list(glob(f"{root}/train2014/*.jpg")) + list(glob(f"{root}/val2014/*.jpg"))
+    for image_info in train_annotations["images"]:
+        img2iid[image_info["file_name"]] = image_info["id"]
+        iid2split[image_info["id"]] = "train"
+    for image_info in val_annotations["images"]:
+        img2iid[image_info["file_name"]] = image_info["id"]
+        if image_info["file_name"] in val_images:
+            iid2split[image_info["id"]] = "val"
+        else:
+            iid2split[image_info["id"]] = "test"
+    
+    for annotation in train_annotations["annotations"] + val_annotations["annotations"]:
+        iid2captions[annotation["image_id"]].append(annotation["caption"])
+    
+    paths = list(glob(f"{dataset_root}/train/*.jpg")) + list(glob(f"{dataset_root}/val/*.jpg"))
     random.shuffle(paths)
     caption_paths = [path for path in paths if path.split("/")[-1] in iid2captions]
-
     if len(paths) == len(caption_paths):
         print("all images have caption annotations")
     else:
@@ -46,7 +55,7 @@ def make_arrow(root, dataset_root):
 
     bs = [path2rest(path, iid2captions, iid2split) for path in tqdm(caption_paths)]
 
-    for split in ["train", "val", "restval", "test"]:
+    for split in ["train", "val", "test"]:
         batches = [b for b in bs if b[-1] == split]
 
         dataframe = pd.DataFrame(
@@ -56,7 +65,7 @@ def make_arrow(root, dataset_root):
         table = pa.Table.from_pandas(dataframe)
         os.makedirs(dataset_root, exist_ok=True)
         with pa.OSFile(
-            f"{dataset_root}/coco_caption_karpathy_{split}.arrow", "wb"
+            f"{dataset_root}/wizviz_{split}.arrow", "wb"
         ) as sink:
             with pa.RecordBatchFileWriter(sink, table.schema) as writer:
                 writer.write_table(table)
