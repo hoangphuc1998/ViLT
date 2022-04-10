@@ -119,7 +119,7 @@ def main(_config):
         return [dataset.get_raw_image(i) for i in indices]
 
     inputs = [
-        gr.inputs.Textbox(label="Caption with [MASK] tokens to be filled.", lines=5),
+        gr.inputs.Textbox(label="Caption", lines=5),
     ]
     outputs = [
         gr.outputs.Carousel(components=["image"])
@@ -130,7 +130,11 @@ def main(_config):
         inputs=inputs,
         outputs=outputs,
         examples=[
-            ["a car"]
+            ["A Christmas sweater with a tree made out of small Santa clauses with snow, snowflakes, a Christmas present, stars, and music symbols surrounding it."],
+            ["A person wearing a blue and white pinstriped shirt with white buttons."],
+            ["A Keurig type cup of French vanilla iced coffee to brew over ice."],
+            ["A microwave oven with 8:43 as the time is on a counter-top."],
+            ["The word cabinet is written twice with whiteboard markers with green and red lines above and below the words."]
         ],
     )
 
